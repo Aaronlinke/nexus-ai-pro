@@ -5,33 +5,14 @@ import ChatMessage from "@/components/ChatMessage";
 import QuickCommand from "@/components/QuickCommand";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-
-interface Message {
-  id: string;
-  type: "user" | "bot" | "system";
-  content: string;
-  isLoading?: boolean;
-}
+import { useStreamingChat } from "@/hooks/useStreamingChat";
 
 const Index = () => {
   const [mode, setMode] = useState("universal");
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      type: "system",
-      content: `<strong>NEXUS-AI PRO System initialisiert</strong><br><br>
-        Erweiterte Funktionalität aktiviert:<br>
-        • Internet-Recherche und Websuche<br>
-        • API-Integrationen (OpenAI, Google, WolframAlpha)<br>
-        • Dateiverarbeitung und -analyse<br>
-        • Code-Generierung und Ausführung<br>
-        • Echtzeit-Datenverarbeitung<br><br>
-        Bereit für komplexe Aufgaben und Befehle.`
-    }
-  ]);
   const [input, setInput] = useState("");
   const chatRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const { messages, sendMessage } = useStreamingChat();
 
   useEffect(() => {
     if (chatRef.current) {
@@ -40,139 +21,12 @@ const Index = () => {
   }, [messages]);
 
   const processCommand = async (command: string) => {
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      type: "user",
-      content: command
-    };
-
-    const loadingMessage: Message = {
-      id: (Date.now() + 1).toString(),
-      type: "bot",
-      content: "",
-      isLoading: true
-    };
-
-    setMessages((prev) => [...prev, userMessage, loadingMessage]);
-
-    // Simulate processing time based on command complexity
-    const processingTime = Math.min(3000, 1000 + command.length * 10);
+    await sendMessage(command, mode);
     
-    setTimeout(() => {
-      const response = generateResponse(command);
-      
-      setMessages((prev) => 
-        prev.map((msg) => 
-          msg.id === loadingMessage.id 
-            ? { ...msg, content: response, isLoading: false }
-            : msg
-        )
-      );
-
-      toast({
-        title: "Befehl ausgeführt",
-        description: "Die Verarbeitung wurde erfolgreich abgeschlossen.",
-      });
-    }, processingTime);
-  };
-
-  const generateResponse = (command: string): string => {
-    const cmd = command.toLowerCase();
-
-    if (cmd.includes("suche") || cmd.includes("finde") || cmd.includes("recherche")) {
-      return generateWebSearchResponse(command);
-    }
-    if (cmd.includes("analysier") || cmd.includes("daten")) {
-      return generateDataAnalysisResponse();
-    }
-    if (cmd.includes("code") || cmd.includes("programmier")) {
-      return generateCodeResponse(command);
-    }
-    if (cmd.includes("erstelle") || cmd.includes("dokument")) {
-      return generateDocumentResponse();
-    }
-    if (cmd.includes("api") || cmd.includes("integration")) {
-      return generateAPIResponse();
-    }
-
-    return generateDefaultResponse(command);
-  };
-
-  const generateWebSearchResponse = (query: string): string => {
-    return `🔍 <strong>Websuche durchgeführt</strong><br><br>
-      Suchbegriff: "${query}"<br><br>
-      <strong>Gefundene Ergebnisse:</strong><br>
-      1. <span class="text-neon">KI-Entwicklungen 2024</span> - Neueste Fortschritte in der KI-Forschung<br>
-      2. <span class="text-neon">Machine Learning Best Practices</span> - Praktische Anleitungen für ML-Projekte<br>
-      3. <span class="text-neon">Neural Networks erklärt</span> - Grundlagen und fortgeschrittene Konzepte<br><br>
-      ✅ Suche erfolgreich abgeschlossen. 3 relevante Ergebnisse gefunden.`;
-  };
-
-  const generateDataAnalysisResponse = (): string => {
-    return `📊 <strong>Datenanalyse</strong><br><br>
-      Analysiere bereitgestellte Daten...<br><br>
-      <strong>Ergebnisse:</strong><br>
-      • ${Math.floor(Math.random() * 100)} Datenpunkte verarbeitet<br>
-      • ${Math.floor(Math.random() * 10) + 1} signifikante Muster erkannt<br>
-      • Korrelationskoeffizient: ${(Math.random() * 0.8 + 0.1).toFixed(2)}<br>
-      • Vorhersagegenauigkeit: ${(Math.random() * 30 + 70).toFixed(1)}%<br><br>
-      ✅ Analyse abgeschlossen. Visualisierung wird generiert...`;
-  };
-
-  const generateCodeResponse = (command: string): string => {
-    const language = command.includes("python") ? "Python" : "JavaScript";
-    return `💻 <strong>Code-Generierung: ${language}</strong><br><br>
-      <div style="background: rgba(0,0,0,0.5); border-radius: 8px; padding: 12px; font-family: monospace; margin: 10px 0;">
-def process_data():<br>
-&nbsp;&nbsp;&nbsp;&nbsp;# Automatisch generierte Funktion<br>
-&nbsp;&nbsp;&nbsp;&nbsp;result = []<br>
-&nbsp;&nbsp;&nbsp;&nbsp;for i in range(10):<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result.append(i * 2)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;return result
-      </div>
-      ✅ Code erfolgreich generiert und bereit zur Ausführung.`;
-  };
-
-  const generateDocumentResponse = (): string => {
-    return `📄 <strong>Dokument-Erstellung</strong><br><br>
-      Erstelle ein strukturiertes Dokument...<br><br>
-      <strong>Gliederung:</strong><br>
-      1. Einleitung und Hintergrund<br>
-      2. Methodik und Ansatz<br>
-      3. Ergebnisse und Analyse<br>
-      4. Diskussion und Schlussfolgerungen<br>
-      5. Referenzen und Anhänge<br><br>
-      ✅ Dokument erfolgreich erstellt.`;
-  };
-
-  const generateAPIResponse = (): string => {
-    return `🔌 <strong>API-Integration</strong><br><br>
-      Verbinde mit externer API...<br><br>
-      ✅ Verbindung erfolgreich hergestellt.<br>
-      📥 Daten werden abgerufen...<br><br>
-      <strong>API-Antwort:</strong><br>
-      <div style="background: rgba(0,0,0,0.5); border-radius: 8px; padding: 12px; font-family: monospace; margin: 10px 0;">
-{<br>
-&nbsp;&nbsp;"status": "success",<br>
-&nbsp;&nbsp;"data": {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;"items": ${Math.floor(Math.random() * 50) + 10},<br>
-&nbsp;&nbsp;&nbsp;&nbsp;"timestamp": "${new Date().toISOString()}"<br>
-&nbsp;&nbsp;}<br>
-}
-      </div>
-      ✅ Daten erfolgreich verarbeitet.`;
-  };
-
-  const generateDefaultResponse = (command: string): string => {
-    return `🤖 <strong>Komplexe Befehlsverarbeitung</strong><br><br>
-      Analysiere Befehl: "${command}"<br><br>
-      <strong>Verarbeitungsschritte:</strong><br>
-      1. Semantische Analyse des Befehls<br>
-      2. Identifikation der Hauptintention<br>
-      3. Planung der Ausführungsschritte<br>
-      4. Ressourcenzuweisung und Priorisierung<br>
-      5. Parallelverarbeitung von Teilaufgaben<br><br>
-      ✅ Befehl erfolgreich verarbeitet und ausgeführt.`;
+    toast({
+      title: "Befehl wird verarbeitet",
+      description: "Die KI generiert eine Antwort in Echtzeit.",
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
