@@ -4,15 +4,21 @@ import BotSidebar from "@/components/BotSidebar";
 import ChatMessage from "@/components/ChatMessage";
 import QuickCommand from "@/components/QuickCommand";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useToast } from "@/hooks/use-toast";
 import { useStreamingChat } from "@/hooks/useStreamingChat";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Menu, Send } from "lucide-react";
 
 const Index = () => {
   const [mode, setMode] = useState("universal");
   const [input, setInput] = useState("");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { messages, sendMessage } = useStreamingChat();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (chatRef.current) {
@@ -53,31 +59,56 @@ const Index = () => {
 
     if (commands[capability]) {
       processCommand(commands[capability]);
+      setSidebarOpen(false);
     }
   };
 
   const quickCommands = [
-    { icon: "🌐", label: "Websuche", command: "Suche im Internet nach " },
-    { icon: "📊", label: "Datenanalyse", command: "Analysiere Daten aus " },
+    { icon: "🌐", label: "Web", command: "Suche im Internet nach " },
+    { icon: "📊", label: "Daten", command: "Analysiere Daten aus " },
     { icon: "💻", label: "Code", command: "Schreibe Code für " },
-    { icon: "📄", label: "Dokument", command: "Erstelle ein Dokument über " },
-    { icon: "🔌", label: "API", command: "Verbinde mit API für " }
   ];
 
+  const SidebarContent = (
+    <BotSidebar 
+      mode={mode} 
+      onModeChange={setMode}
+      onCapabilityClick={handleCapabilityClick}
+    />
+  );
+
   return (
-    <div className="flex h-screen overflow-hidden bg-gradient-to-br from-tech via-background to-tech">
-      <BotSidebar 
-        mode={mode} 
-        onModeChange={setMode}
-        onCapabilityClick={handleCapabilityClick}
-      />
+    <div className="flex h-[100dvh] overflow-hidden bg-gradient-to-br from-tech via-background to-tech">
+      {/* Desktop Sidebar */}
+      {!isMobile && SidebarContent}
       
-      <div className="flex-1 flex flex-col">
-        <BotHeader />
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Mobile Header with Menu */}
+        {isMobile ? (
+          <header className="bg-tech border-b border-neon/50 p-3 flex items-center gap-3">
+            <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="shrink-0 text-neon">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="p-0 w-[280px] bg-tech border-r border-neon">
+                {SidebarContent}
+              </SheetContent>
+            </Sheet>
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-2 h-2 rounded-full bg-neon animate-pulse-glow shrink-0" />
+              <h1 className="text-base font-bold neon-text truncate">NEXUS-AI PRO</h1>
+            </div>
+          </header>
+        ) : (
+          <BotHeader />
+        )}
         
+        {/* Chat Area */}
         <div 
           ref={chatRef}
-          className="flex-1 overflow-y-auto p-6 space-y-3 bg-background/30"
+          className="flex-1 overflow-y-auto p-3 md:p-6 space-y-2 md:space-y-3 bg-background/30"
         >
           {messages.map((message) => (
             <ChatMessage
@@ -89,8 +120,10 @@ const Index = () => {
           ))}
         </div>
 
-        <div className="bg-tech border-t-2 border-neon p-6">
-          <div className="flex flex-wrap gap-2 mb-4">
+        {/* Input Area */}
+        <div className="bg-tech border-t border-neon/50 p-3 md:p-6">
+          {/* Quick Commands - Hidden on very small screens */}
+          <div className="hidden sm:flex flex-wrap gap-2 mb-3">
             {quickCommands.map((cmd) => (
               <QuickCommand
                 key={cmd.label}
@@ -102,15 +135,21 @@ const Index = () => {
             ))}
           </div>
           
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} className="flex gap-2">
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Geben Sie hier Ihren komplexen Befehl ein..."
-              className="bg-input border-2 border-neon/50 text-foreground placeholder:text-muted-foreground 
-                       focus:border-neon focus:ring-2 focus:ring-neon/20 rounded-xl h-14 text-base
-                       neon-border"
+              placeholder="Nachricht eingeben..."
+              className="flex-1 bg-input border border-neon/30 text-foreground placeholder:text-muted-foreground 
+                       focus:border-neon focus:ring-1 focus:ring-neon/20 rounded-lg h-10 md:h-12 text-sm md:text-base"
             />
+            <Button 
+              type="submit" 
+              size="icon"
+              className="h-10 w-10 md:h-12 md:w-12 bg-neon/20 border border-neon text-neon hover:bg-neon/30 shrink-0"
+            >
+              <Send className="h-4 w-4 md:h-5 md:w-5" />
+            </Button>
           </form>
         </div>
       </div>
