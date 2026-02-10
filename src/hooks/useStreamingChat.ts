@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 interface Message {
   id: string;
@@ -7,20 +7,55 @@ interface Message {
   isLoading?: boolean;
 }
 
-export const useStreamingChat = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      type: "system",
-      content: `<strong>🧠 MACALU BRAIN initialisiert</strong><br><br>
-        Verschmolzenes Superintelligenz-System aktiv:<br>
-        • Fusion-KIs, Bot-KIs & NFC-KIs integriert<br>
-        • Task-Execution & Kategorisierung<br>
-        • Report-Generator & Prozess-Optimierung<br>
-        • Echtzeit-Streaming mit Brain-Netzwerk<br><br>
-        Alle Systeme bereit. Awaiting commands.`
+const STORAGE_KEY = "macalu-brain-chat-history";
+
+const systemMessage: Message = {
+  id: "1",
+  type: "system",
+  content: `<strong>🧠 MACALU BRAIN initialisiert</strong><br><br>
+    Verschmolzenes Superintelligenz-System aktiv:<br>
+    • Fusion-KIs, Bot-KIs & NFC-KIs integriert<br>
+    • Task-Execution & Kategorisierung<br>
+    • Report-Generator & Prozess-Optimierung<br>
+    • Echtzeit-Streaming mit Brain-Netzwerk<br><br>
+    Alle Systeme bereit. Awaiting commands.`
+};
+
+const loadMessages = (): Message[] => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored) as Message[];
+      // Filter out any loading messages from a previous session
+      return [systemMessage, ...parsed.filter(m => m.type !== "system" && !m.isLoading)];
     }
-  ]);
+  } catch { /* ignore */ }
+  return [systemMessage];
+};
+
+const saveMessages = (messages: Message[]) => {
+  try {
+    // Only save non-system, non-loading messages
+    const toSave = messages.filter(m => m.type !== "system" && !m.isLoading);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+  } catch { /* ignore */ }
+};
+
+export const useStreamingChat = () => {
+  const [messages, setMessages] = useState<Message[]>(loadMessages);
+
+  // Persist whenever messages change (but skip loading states)
+  useEffect(() => {
+    const hasLoading = messages.some(m => m.isLoading);
+    if (!hasLoading) {
+      saveMessages(messages);
+    }
+  }, [messages]);
+
+  const clearHistory = useCallback(() => {
+    localStorage.removeItem(STORAGE_KEY);
+    setMessages([systemMessage]);
+  }, []);
 
   const sendMessage = async (input: string, mode: string) => {
     const userMessage: Message = {
@@ -169,5 +204,5 @@ export const useStreamingChat = () => {
     }
   };
 
-  return { messages, sendMessage };
+  return { messages, sendMessage, clearHistory };
 };
