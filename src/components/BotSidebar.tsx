@@ -12,16 +12,16 @@ interface BotSidebarProps {
 
 const BotSidebar = ({ mode, onModeChange, onCapabilityClick }: BotSidebarProps) => {
   const capabilities = [
-    { icon: "🔍", title: "Websuche", cmd: "web-search" },
-    { icon: "📊", title: "Datenanalyse", cmd: "data-analysis" },
-    { icon: "💻", title: "Code-Gen", cmd: "code-generation" },
-    { icon: "🖼️", title: "Bildverarbeitung", cmd: "image-processing" },
-    { icon: "📄", title: "Dokumente", cmd: "document-creation" },
-    { icon: "🔌", title: "API", cmd: "api-integration" },
-    { icon: "🤖", title: "Automation", cmd: "automation" },
-    { icon: "🌍", title: "Übersetzung", cmd: "translation" },
-    { icon: "🎮", title: "Simulation", cmd: "simulation" },
-    { icon: "🧠", title: "ML-Training", cmd: "learning" }
+    { icon: "🔬", title: "Fusion-KI Recherche", cmd: "fusion-research" },
+    { icon: "📋", title: "Task-Kategorisierung", cmd: "task-categorization" },
+    { icon: "💻", title: "Code-Fusion", cmd: "code-fusion" },
+    { icon: "📐", title: "Abstrakte Pläne", cmd: "abstract-plans" },
+    { icon: "📊", title: "Report-Generator", cmd: "report-generator" },
+    { icon: "📡", title: "NFC-Bot Steuerung", cmd: "nfc-bot" },
+    { icon: "⚡", title: "Prozess-Optimierung", cmd: "process-optimization" },
+    { icon: "🌍", title: "Multi-Brain Übersetzung", cmd: "multi-translation" },
+    { icon: "🎮", title: "KI-Simulation", cmd: "ki-simulation" },
+    { icon: "🧠", title: "Brain-Training", cmd: "brain-training" }
   ];
 
   return (
@@ -30,8 +30,8 @@ const BotSidebar = ({ mode, onModeChange, onCapabilityClick }: BotSidebarProps) 
         <div className="p-3 md:p-4 space-y-4">
           {/* Logo */}
           <div className="bg-secondary/50 border border-neon/50 rounded-lg p-3 text-center">
-            <h3 className="text-lg font-bold text-neon mb-0.5">🤖 NEXUS-AI PRO</h3>
-            <p className="text-[10px] text-muted-foreground">Universal Command Executor</p>
+            <h3 className="text-lg font-bold text-neon mb-0.5">🧠 MACALU BRAIN</h3>
+            <p className="text-[10px] text-muted-foreground">Fused Superintelligence System</p>
           </div>
 
           {/* Mode Selector */}
@@ -69,19 +69,19 @@ const BotSidebar = ({ mode, onModeChange, onCapabilityClick }: BotSidebarProps) 
             <TabsContent value="info" className="mt-3">
               <div className="bg-secondary/50 border border-neon/30 rounded-lg p-3 space-y-2 text-[11px]">
                 <div>
-                  <div className="text-neon font-semibold mb-1">API-Integrationen</div>
+                  <div className="text-neon font-semibold mb-1">Integrierte KIs</div>
                   <ul className="text-muted-foreground space-y-0.5 list-disc list-inside">
-                    <li>OpenAI GPT-Modelle</li>
-                    <li>Google Search API</li>
-                    <li>WolframAlpha</li>
+                    <li>Fusion-KIs (verschmolzen)</li>
+                    <li>Bot-KIs (Automatisierung)</li>
+                    <li>NFC-KIs (Steuerung)</li>
                   </ul>
                 </div>
                 <div>
-                  <div className="text-neon font-semibold mb-1">Funktionen</div>
+                  <div className="text-neon font-semibold mb-1">Brain-Module</div>
                   <ul className="text-muted-foreground space-y-0.5 list-disc list-inside">
-                    <li>Echtzeit-Websuche</li>
-                    <li>Code-Ausführung</li>
-                    <li>Dateiverarbeitung</li>
+                    <li>Task-Execution Engine</li>
+                    <li>Report-Generator</li>
+                    <li>Prozess-Optimierung</li>
                   </ul>
                 </div>
               </div>

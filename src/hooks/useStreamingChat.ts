@@ -12,13 +12,13 @@ export const useStreamingChat = () => {
     {
       id: "1",
       type: "system",
-      content: `<strong>NEXUS-AI PRO System initialisiert</strong><br><br>
-        Erweiterte Funktionalität aktiviert:<br>
-        • Echte KI-Integration mit Lovable AI<br>
-        • Streaming-Antworten in Echtzeit<br>
-        • Modus-spezifische Persönlichkeiten<br>
-        • Intelligente Kontexterkennung<br><br>
-        Bereit für komplexe Aufgaben und Befehle.`
+      content: `<strong>🧠 MACALU BRAIN initialisiert</strong><br><br>
+        Verschmolzenes Superintelligenz-System aktiv:<br>
+        • Fusion-KIs, Bot-KIs & NFC-KIs integriert<br>
+        • Task-Execution & Kategorisierung<br>
+        • Report-Generator & Prozess-Optimierung<br>
+        • Echtzeit-Streaming mit Brain-Netzwerk<br><br>
+        Alle Systeme bereit. Awaiting commands.`
     }
   ]);
 

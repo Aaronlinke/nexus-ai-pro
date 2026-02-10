@@ -12,7 +12,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Menu, Send } from "lucide-react";
 
 const Index = () => {
-  const [mode, setMode] = useState("universal");
+  const [mode, setMode] = useState("fusion");
   const [input, setInput] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
@@ -45,16 +45,16 @@ const Index = () => {
 
   const handleCapabilityClick = (capability: string) => {
     const commands: Record<string, string> = {
-      "web-search": "Führe eine Websuche zum Thema künstliche Intelligenz durch",
-      "data-analysis": "Analysiere die hochgeladenen Daten und erstelle eine Visualisierung",
-      "code-generation": "Generiere Python-Code für eine Datenanalyse-Anwendung",
-      "image-processing": "Verarbeite die hochgeladenen Bilder mit KI-Algorithmen",
-      "document-creation": "Erstelle ein umfassendes Dokument zu KI-Technologien",
-      "api-integration": "Integriere eine Wetter-API und zeige die aktuellen Daten",
-      "automation": "Automatisiere einen Datenverarbeitungs-Workflow",
-      "translation": "Übersetze einen Text in mehrere Sprachen",
-      "simulation": "Führe eine KI-Trainingssimulation durch",
-      "learning": "Trainiere ein Machine-Learning-Modell mit Beispielsdaten"
+      "fusion-research": "Recherchiere mit allen Fusion-KIs zum Thema künstliche Superintelligenz",
+      "task-categorization": "Kategorisiere meine aktuellen Tasks nach Priorität und Komplexität",
+      "code-fusion": "Generiere optimierten Code mit der Fusion-Engine",
+      "abstract-plans": "Erstelle einen abstrakten Plan für ein KI-Projekt",
+      "report-generator": "Generiere einen umfassenden Report über aktuelle Prozesse",
+      "nfc-bot": "Steuere den NFC-Bot und zeige den aktuellen Status",
+      "process-optimization": "Optimiere den aktuellen Workflow-Prozess",
+      "multi-translation": "Übersetze mit Multi-Brain in mehrere Sprachen gleichzeitig",
+      "ki-simulation": "Führe eine KI-Fusionssimulation durch",
+      "brain-training": "Trainiere das Brain-Netzwerk mit neuen Daten"
     };
 
     if (commands[capability]) {
@@ -64,9 +64,9 @@ const Index = () => {
   };
 
   const quickCommands = [
-    { icon: "🌐", label: "Web", command: "Suche im Internet nach " },
-    { icon: "📊", label: "Daten", command: "Analysiere Daten aus " },
-    { icon: "💻", label: "Code", command: "Schreibe Code für " },
+    { icon: "📋", label: "Task", command: "Kategorisiere Task: " },
+    { icon: "⚡", label: "Optimieren", command: "Optimiere Prozess: " },
+    { icon: "📊", label: "Report", command: "Generiere Report: " },
   ];
 
   const SidebarContent = (
@@ -98,7 +98,7 @@ const Index = () => {
             </Sheet>
             <div className="flex items-center gap-2 min-w-0">
               <div className="w-2 h-2 rounded-full bg-neon animate-pulse-glow shrink-0" />
-              <h1 className="text-base font-bold neon-text truncate">NEXUS-AI PRO</h1>
+              <h1 className="text-base font-bold neon-text truncate">MACALU BRAIN</h1>
             </div>
           </header>
         ) : (
