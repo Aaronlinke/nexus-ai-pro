@@ -7,9 +7,9 @@ interface ModeSelectorProps {
 
 const ModeSelector = ({ activeMode, onModeChange }: ModeSelectorProps) => {
   const modes = [
-    { id: "universal", label: "Uni" },
-    { id: "developer", label: "Dev" },
-    { id: "research", label: "Res" }
+    { id: "fusion", label: "Fusion" },
+    { id: "executor", label: "Exec" },
+    { id: "analyst", label: "Analyst" }
   ];
 
   return (
