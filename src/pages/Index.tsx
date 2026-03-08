@@ -14,6 +14,7 @@ import { useStreamingChat } from "@/hooks/useStreamingChat";
 import { useKernelModule } from "@/hooks/useKernelModule";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Menu, Send, Camera, Trash2, Plus } from "lucide-react";
+import OasisBackground from "@/components/OasisBackground";
 const Index = () => {
   const [mode, setMode] = useState("fusion");
   const [input, setInput] = useState("");
@@ -149,8 +150,9 @@ const Index = () => {
         {/* Chat Area */}
         <div 
           ref={chatRef}
-          className="flex-1 overflow-y-auto p-3 md:p-6 space-y-2 md:space-y-3 bg-background/30"
+          className="flex-1 overflow-y-auto p-3 md:p-6 space-y-2 md:space-y-3 bg-background/30 relative"
         >
+          <OasisBackground />
           {messages.map((message) => (
             <ChatMessage
               key={message.id}
