@@ -5,6 +5,7 @@ import ChatMessage from "@/components/ChatMessage";
 import QuickCommand from "@/components/QuickCommand";
 import CameraCapture from "@/components/CameraCapture";
 import VoiceInput from "@/components/VoiceInput";
+import AudioRecorder from "@/components/AudioRecorder";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";

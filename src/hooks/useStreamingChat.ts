@@ -60,11 +60,15 @@ export const useStreamingChat = () => {
     setMessages([systemMessage]);
   }, []);
 
-  const sendMessage = async (input: string, mode: string, customKernel?: string, imageBase64?: string) => {
+  const sendMessage = async (input: string, mode: string, customKernel?: string, imageBase64?: string, audioBase64?: string) => {
+    let displayContent = input;
+    if (imageBase64) displayContent = `📷 [Bild angehängt]\n${input}`;
+    else if (audioBase64) displayContent = `🔴 [Audio angehängt]\n${input}`;
+
     const userMessage: Message = {
       id: Date.now().toString(),
       type: "user",
-      content: imageBase64 ? `📷 [Bild angehängt]\n${input}` : input
+      content: displayContent
     };
 
     const assistantMessage: Message = {
@@ -79,11 +83,16 @@ export const useStreamingChat = () => {
     try {
       const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
 
-      // Build the new user message content (multimodal if image)
+      // Build the new user message content (multimodal if image/audio)
       let newUserContent: any = input;
       if (imageBase64) {
         newUserContent = [
           { type: "image_url", image_url: { url: imageBase64 } },
+          { type: "text", text: input },
+        ];
+      } else if (audioBase64) {
+        newUserContent = [
+          { type: "input_audio", input_audio: { data: audioBase64.split(",")[1] || audioBase64, format: "webm" } },
           { type: "text", text: input },
         ];
       }
