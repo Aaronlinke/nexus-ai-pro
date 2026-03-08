@@ -3,6 +3,8 @@ import BotHeader from "@/components/BotHeader";
 import BotSidebar from "@/components/BotSidebar";
 import ChatMessage from "@/components/ChatMessage";
 import QuickCommand from "@/components/QuickCommand";
+import CameraCapture from "@/components/CameraCapture";
+import VoiceInput from "@/components/VoiceInput";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -10,12 +12,14 @@ import { useToast } from "@/hooks/use-toast";
 import { useStreamingChat } from "@/hooks/useStreamingChat";
 import { useKernelModule } from "@/hooks/useKernelModule";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Menu, Send } from "lucide-react";
+import { Menu, Send, Camera } from "lucide-react";
 
 const Index = () => {
   const [mode, setMode] = useState("fusion");
   const [input, setInput] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [pendingImage, setPendingImage] = useState<string | null>(null);
   const chatRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { messages, sendMessage } = useStreamingChat();
@@ -28,21 +32,32 @@ const Index = () => {
     }
   }, [messages]);
 
-  const processCommand = async (command: string) => {
-    await sendMessage(command, mode, kernel);
+  const processCommand = async (command: string, imageBase64?: string) => {
+    await sendMessage(command, mode, kernel, imageBase64);
     
     toast({
       title: "Befehl wird verarbeitet",
-      description: "Die KI generiert eine Antwort in Echtzeit.",
+      description: imageBase64 ? "Bild wird von der KI analysiert..." : "Die KI generiert eine Antwort in Echtzeit.",
     });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (input.trim()) {
-      processCommand(input.trim());
+    if (input.trim() || pendingImage) {
+      const text = input.trim() || "Analysiere dieses Bild und beschreibe was du siehst.";
+      processCommand(text, pendingImage || undefined);
       setInput("");
+      setPendingImage(null);
     }
+  };
+
+  const handleCameraCapture = (base64: string) => {
+    setPendingImage(base64);
+    toast({ title: "📷 Foto aufgenommen", description: "Schreibe eine Frage zum Bild oder sende es direkt." });
+  };
+
+  const handleVoiceTranscript = (text: string) => {
+    setInput((prev) => (prev ? prev + " " + text : text));
   };
 
   const handleCapabilityClick = (capability: string) => {
@@ -130,6 +145,22 @@ const Index = () => {
           ))}
         </div>
 
+        {/* Pending Image Preview */}
+        {pendingImage && (
+          <div className="bg-tech border-t border-neon/30 px-3 md:px-6 py-2 flex items-center gap-3">
+            <img src={pendingImage} alt="Vorschau" className="h-12 w-16 object-cover rounded border border-neon/50" />
+            <span className="text-xs text-muted-foreground">📷 Bild bereit – schreibe eine Frage oder sende direkt</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setPendingImage(null)}
+              className="text-destructive text-xs ml-auto"
+            >
+              ✕
+            </Button>
+          </div>
+        )}
+
         {/* Input Area */}
         <div className="bg-tech border-t border-neon/50 p-3 md:p-6">
           {/* Quick Commands - Hidden on very small screens */}
@@ -146,10 +177,20 @@ const Index = () => {
           </div>
           
           <form onSubmit={handleSubmit} className="flex gap-2">
+            <Button
+              type="button"
+              size="icon"
+              onClick={() => setCameraOpen(true)}
+              className="h-10 w-10 md:h-12 md:w-12 bg-neon/20 border border-neon/50 text-neon hover:bg-neon/30 shrink-0"
+              title="Kamera öffnen"
+            >
+              <Camera className="h-4 w-4 md:h-5 md:w-5" />
+            </Button>
+            <VoiceInput onTranscript={handleVoiceTranscript} />
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Nachricht eingeben..."
+              placeholder={pendingImage ? "Frage zum Bild eingeben..." : "Nachricht eingeben..."}
               className="flex-1 bg-input border border-neon/30 text-foreground placeholder:text-muted-foreground 
                        focus:border-neon focus:ring-1 focus:ring-neon/20 rounded-lg h-10 md:h-12 text-sm md:text-base"
             />
@@ -163,6 +204,14 @@ const Index = () => {
           </form>
         </div>
       </div>
+
+      {/* Camera Overlay */}
+      {cameraOpen && (
+        <CameraCapture
+          onCapture={handleCameraCapture}
+          onClose={() => setCameraOpen(false)}
+        />
+      )}
     </div>
   );
 };

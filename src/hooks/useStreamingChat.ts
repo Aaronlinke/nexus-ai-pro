@@ -60,11 +60,11 @@ export const useStreamingChat = () => {
     setMessages([systemMessage]);
   }, []);
 
-  const sendMessage = async (input: string, mode: string, customKernel?: string) => {
+  const sendMessage = async (input: string, mode: string, customKernel?: string, imageBase64?: string) => {
     const userMessage: Message = {
       id: Date.now().toString(),
       type: "user",
-      content: input
+      content: imageBase64 ? `📷 [Bild angehängt]\n${input}` : input
     };
 
     const assistantMessage: Message = {
@@ -78,6 +78,15 @@ export const useStreamingChat = () => {
 
     try {
       const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+
+      // Build the new user message content (multimodal if image)
+      let newUserContent: any = input;
+      if (imageBase64) {
+        newUserContent = [
+          { type: "image_url", image_url: { url: imageBase64 } },
+          { type: "text", text: input },
+        ];
+      }
       
       const resp = await fetch(CHAT_URL, {
         method: "POST",
@@ -92,7 +101,7 @@ export const useStreamingChat = () => {
               role: m.type === "user" ? "user" : "assistant",
               content: m.content.replace(/<[^>]*>/g, '')
             }))
-            .concat([{ role: "user", content: input }]),
+            .concat([{ role: "user", content: newUserContent }]),
           mode,
           customKernel,
         }),
