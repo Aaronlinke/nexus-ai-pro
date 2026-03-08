@@ -129,9 +129,17 @@ const Index = () => {
                 {SidebarContent}
               </SheetContent>
             </Sheet>
-            <div className="flex items-center gap-2 min-w-0">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
               <div className="w-2 h-2 rounded-full bg-neon animate-pulse-glow shrink-0" />
               <h1 className="text-base font-bold neon-text truncate">MACALU BRAIN</h1>
+            </div>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-neon" onClick={newConversation} title="Neuer Chat">
+                <Plus className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={clearHistory} title="Chat löschen">
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </div>
           </header>
         ) : (
