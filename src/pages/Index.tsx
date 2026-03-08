@@ -13,8 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useStreamingChat } from "@/hooks/useStreamingChat";
 import { useKernelModule } from "@/hooks/useKernelModule";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Menu, Send, Camera } from "lucide-react";
-
+import { Menu, Send, Camera, Trash2, Plus } from "lucide-react";
 const Index = () => {
   const [mode, setMode] = useState("fusion");
   const [input, setInput] = useState("");
@@ -24,7 +23,7 @@ const Index = () => {
   const [pendingAudio, setPendingAudio] = useState<string | null>(null);
   const chatRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-  const { messages, sendMessage } = useStreamingChat();
+  const { messages, sendMessage, clearHistory, newConversation } = useStreamingChat();
   const { kernel, setKernel, resetKernel } = useKernelModule();
   const isMobile = useIsMobile();
 
@@ -92,6 +91,7 @@ const Index = () => {
     { icon: "📋", label: "Task", command: "Kategorisiere Task: " },
     { icon: "⚡", label: "Optimieren", command: "Optimiere Prozess: " },
     { icon: "📊", label: "Report", command: "Generiere Report: " },
+    { icon: "🔍", label: "Recherche", command: "Recherchiere gründlich zum Thema: " },
   ];
 
   const handleKernelEvolve = () => {
