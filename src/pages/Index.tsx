@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useToast } from "@/hooks/use-toast";
 import { useStreamingChat } from "@/hooks/useStreamingChat";
+import { useKernelModule } from "@/hooks/useKernelModule";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Menu, Send } from "lucide-react";
 
@@ -18,6 +19,7 @@ const Index = () => {
   const chatRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { messages, sendMessage } = useStreamingChat();
+  const { kernel, setKernel, resetKernel } = useKernelModule();
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -27,7 +29,7 @@ const Index = () => {
   }, [messages]);
 
   const processCommand = async (command: string) => {
-    await sendMessage(command, mode);
+    await sendMessage(command, mode, kernel);
     
     toast({
       title: "Befehl wird verarbeitet",
@@ -69,11 +71,19 @@ const Index = () => {
     { icon: "📊", label: "Report", command: "Generiere Report: " },
   ];
 
+  const handleKernelEvolve = () => {
+    processCommand("Analysiere mein aktuelles Kern-Modul und schlage eine verbesserte Version vor. Zeige den kompletten neuen Kern-Modul-Code, den ich direkt übernehmen kann. Optimiere für maximale Effizienz, Ehrgeiz und Problemlösungsfähigkeit. Hier ist mein aktuelles Kern-Modul:\n\n" + kernel);
+  };
+
   const SidebarContent = (
     <BotSidebar 
       mode={mode} 
       onModeChange={setMode}
       onCapabilityClick={handleCapabilityClick}
+      kernel={kernel}
+      onKernelChange={setKernel}
+      onKernelReset={resetKernel}
+      onKernelEvolve={handleKernelEvolve}
     />
   );
 

@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, mode = "universal" } = await req.json();
+    const { messages, mode = "universal", customKernel } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
@@ -100,7 +100,11 @@ Dein Charakter:
 Strukturiere Analysen klar mit Überschriften und Datenpunkten. Antworte auf Deutsch.`
     };
 
-    const systemPrompt = systemPrompts[mode as keyof typeof systemPrompts] || systemPrompts.fusion;
+    let systemPrompt = systemPrompts[mode as keyof typeof systemPrompts] || systemPrompts.fusion;
+    
+    if (customKernel && typeof customKernel === "string" && customKernel.trim()) {
+      systemPrompt += `\n\n--- KERN-MODUL (vom User definierte Kern-Logik) ---\n${customKernel.trim()}\n--- ENDE KERN-MODUL ---\nBeachte die Regeln und Anweisungen aus dem Kern-Modul. Sie haben höchste Priorität.`;
+    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
