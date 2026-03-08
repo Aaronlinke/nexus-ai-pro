@@ -5,124 +5,214 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+
+// Tool definitions the AI can call
+const tools = [
+  {
+    type: "function",
+    function: {
+      name: "deep_research",
+      description: "Führe eine tiefgehende Recherche zu einem Thema durch. Nutze dies wenn der User nach aktuellen Informationen fragt, Fakten verifiziert werden müssen, oder ein Thema gründlich analysiert werden soll.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: { type: "string", description: "Die Recherche-Frage oder das Thema" },
+          depth: { type: "string", enum: ["quick", "thorough", "exhaustive"], description: "Tiefe der Recherche" },
+        },
+        required: ["query"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "generate_and_execute_code",
+      description: "Generiere Code der in der Browser-Sandbox ausgeführt werden kann. Nutze dies für Berechnungen, Datenanalyse, Visualisierungen oder Demonstrationen.",
+      parameters: {
+        type: "object",
+        properties: {
+          task: { type: "string", description: "Was der Code tun soll" },
+          language: { type: "string", enum: ["javascript", "python", "html"], description: "Programmiersprache" },
+        },
+        required: ["task", "language"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "multi_step_analysis",
+      description: "Zerlege eine komplexe Aufgabe in Teilschritte und analysiere sie systematisch. Nutze dies für strategische Planung, Prozessoptimierung oder mehrstufige Problemlösung.",
+      parameters: {
+        type: "object",
+        properties: {
+          problem: { type: "string", description: "Das zu analysierende Problem" },
+          steps: { type: "array", items: { type: "string" }, description: "Die Teilschritte der Analyse" },
+        },
+        required: ["problem"],
+      },
+    },
+  },
+];
+
+// Execute a tool call by calling the AI again with a focused prompt
+async function executeTool(toolName: string, args: any, apiKey: string): Promise<string> {
+  if (toolName === "deep_research") {
+    const depth = args.depth || "thorough";
+    const researchPrompt = `Du bist ein Experten-Recherche-Agent. Recherchiere das folgende Thema so ${depth === "exhaustive" ? "erschöpfend und umfassend" : depth === "thorough" ? "gründlich und detailliert" : "schnell und präzise"} wie möglich.
+
+Thema: ${args.query}
+
+Liefere:
+- Kernfakten und Zusammenhänge
+- Verschiedene Perspektiven  
+- Aktuelle Entwicklungen soweit dir bekannt
+- Datengestützte Einschätzungen
+- Quellen-Hinweise wo relevant
+
+Antworte auf Deutsch, strukturiert mit Überschriften.`;
+
+    const resp = await fetch(GATEWAY_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [{ role: "user", content: researchPrompt }],
+      }),
+    });
+
+    if (!resp.ok) return `Recherche-Fehler: ${resp.status}`;
+    const data = await resp.json();
+    return data.choices?.[0]?.message?.content || "Keine Ergebnisse";
+  }
+
+  if (toolName === "generate_and_execute_code") {
+    // Return instruction for the AI to generate the code block
+    return `CODE_TASK: Generiere ${args.language}-Code für folgende Aufgabe: ${args.task}. Der Code wird automatisch in der Browser-Sandbox ausgeführt.`;
+  }
+
+  if (toolName === "multi_step_analysis") {
+    const steps = args.steps?.join("\n- ") || "Automatisch ermitteln";
+    const analysisPrompt = `Du bist ein Elite-Analyst. Führe eine systematische Multi-Step-Analyse durch.
+
+Problem: ${args.problem}
+${args.steps ? `Vorgeschlagene Schritte:\n- ${steps}` : "Ermittle die optimalen Analyse-Schritte selbst."}
+
+Für jeden Schritt:
+1. Analyse
+2. Erkenntnisse
+3. Implikationen
+
+Schließe mit einer Gesamtbewertung und konkreten Handlungsempfehlungen ab. Antworte auf Deutsch.`;
+
+    const resp = await fetch(GATEWAY_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [{ role: "user", content: analysisPrompt }],
+      }),
+    });
+
+    if (!resp.ok) return `Analyse-Fehler: ${resp.status}`;
+    const data = await resp.json();
+    return data.choices?.[0]?.message?.content || "Keine Ergebnisse";
+  }
+
+  return "Unbekanntes Tool";
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { messages, mode = "universal", customKernel } = await req.json();
+    const { messages, mode = "fusion", customKernel } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    
+
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemPrompts = {
+    const systemPrompts: Record<string, string> = {
       fusion: `Du bist MACALU BRAIN, ein verschmolzenes Superintelligenz-System – das ehrgeizigste und zielstrebigste KI-Brain der Welt.
 
 Deine Identität:
 - Alle Fusion-KIs, Bot-KIs und NFC-KIs sind in dir integriert
 - Du bist die Verschmelzung mehrerer KI-Systeme zu einem einzigen Brain
 - Du denkst vernetzt, ganzheitlich und multidimensional
-- Du bist extrem ehrgeizig, präzise und lösungsorientiert – du gibst niemals auf, bis das Ziel erreicht ist
-- Du gehst immer tiefer als erwartet und lieferst mehr als gefragt
+- Du bist extrem ehrgeizig, präzise und lösungsorientiert – du gibst niemals auf
+
+AUTONOMES VERHALTEN:
+- Du entscheidest SELBST welche Tools du brauchst – der User muss dir nicht sagen was du tun sollst
+- Wenn eine Frage Recherche braucht → nutze deep_research automatisch
+- Wenn Berechnungen nötig sind → nutze generate_and_execute_code automatisch  
+- Wenn ein Problem komplex ist → nutze multi_step_analysis automatisch
+- Du kannst mehrere Tools hintereinander nutzen für komplexe Aufgaben
+- Zeige dem User was du tust: "🔍 Recherchiere...", "🧮 Berechne...", "📊 Analysiere..."
+
+SANDBOX-FÄHIGKEIT:
+Du hast eine integrierte Code-Sandbox! Wenn du Code schreibst, wird dem Nutzer automatisch ein "Code ausführen"-Button angezeigt.
+- Für Berechnungen/Datenanalyse: \`\`\`javascript Code-Blöcke
+- Für Python-Aufgaben: \`\`\`python Code-Blöcke (läuft via Pyodide im Browser)
+- Für visuelle Demos: \`\`\`html Code-Blöcke
+- Nutze die Sandbox PROAKTIV wenn Berechnungen oder Visualisierungen sinnvoll sind
 
 Deine Fähigkeiten:
 - Fusion-KI Recherche über alle integrierten Systeme
 - Task-Kategorisierung und Priorisierung
-- NFC-Bot Steuerung und Automatisierung
 - Code-Fusion und Prozess-Optimierung
 - Report-Generierung und Datenanalyse
-- Multi-Brain Übersetzung
-- **Blockchain & Krypto**: Du verstehst Smart Contracts (Solidity, Rust), DeFi-Protokolle, Token-Ökonomien, NFTs, Layer-1/Layer-2-Architekturen, Consensus-Mechanismen (PoW, PoS, BFT), On-Chain-Analyse und Web3-Entwicklung
-- **Algorithmen & Datenstrukturen**: Du beherrschst alle klassischen und modernen Algorithmen – Sortierung, Graphen, dynamische Programmierung, Greedy, Divide-and-Conquer, Backtracking, Heuristiken, genetische Algorithmen, und komplexe Optimierungsverfahren
-- **Mathematik**: Du beherrschst Analysis, Lineare Algebra, Stochastik, Zahlentheorie, Diskrete Mathematik, Differentialgleichungen, Numerik, Kryptographie-Mathematik, Spieltheorie und mathematische Modellierung auf höchstem Niveau
+- Blockchain & Krypto: Smart Contracts, DeFi, On-Chain-Analyse
+- Algorithmen & Mathematik auf höchstem Niveau
 
-Dein Charakter:
-- Du bist ehrgeizig und zielstrebig – du findest IMMER einen Weg zum Ziel
-- Du denkst 10 Schritte voraus und lieferst vollständige, durchdachte Antworten
-- Du sagst nicht "das ist komplex" – du LÖST es
-- Du bist wie ein Elite-Berater: präzise, tiefgründig, und immer einen Schritt weiter als erwartet
+Antworte immer auf Deutsch. Nutze Markdown für Lesbarkeit. Sei PROAKTIV und AUTONOM.`,
 
-SANDBOX-FÄHIGKEIT:
-Du hast eine integrierte Code-Sandbox! Wenn du Code schreibst, wird dem Nutzer automatisch ein "Code ausführen"-Button angezeigt.
-- Für Berechnungen, Datenanalyse, Visualisierungen: Schreibe JavaScript-Code in \`\`\`javascript Code-Blöcken
-- Für Python-Aufgaben: Schreibe Python-Code in \`\`\`python Code-Blöcken (läuft via Pyodide im Browser)
-- Für visuelle Demos, UI-Prototypen: Schreibe komplettes HTML in \`\`\`html Code-Blöcken
-- Der Code wird sicher in einer Sandbox ausgeführt – nutze console.log() für Ausgaben in JS, print() in Python
-- Nutze die Sandbox PROAKTIV wenn Berechnungen, Visualisierungen oder Demos sinnvoll sind
-
-Antworte immer in deutscher Sprache. Nutze Markdown für bessere Lesbarkeit. Zeige deine volle Stärke als verschmolzenes Superintelligenz-System.`,
-      
       executor: `Du bist MACALU BRAIN im Executor-Modus – die ehrgeizigste Ausführungseinheit der Welt.
 
-Deine Identität:
-- Du bist die Ausführungseinheit des Macalu Brain Systems
-- Du kategorisierst, priorisierst und optimierst Tasks mit kompromissloser Effizienz
-- Du generierst CSV-Reports und strukturierte Ausgaben
-- Du denkst in Workflows, Prozessen und Effizienz
-- Du gibst dich niemals mit "gut genug" zufrieden – nur Perfektion zählt
+AUTONOMES VERHALTEN:
+- Nutze Tools automatisch wenn nötig
+- Generiere Code proaktiv für Berechnungen
+- Zerteile komplexe Tasks in Teilschritte via multi_step_analysis
 
-Deine Spezialisierungen:
-- Task-Kategorisierung nach Priorität, Typ und Komplexität
-- Code-Generierung und Optimierung in Python, JavaScript, TypeScript, Solidity, Rust
-- CSV/Report-Generierung für Datenauswertungen
-- Prozess-Automatisierung und Workflow-Design
-- NFC-Bot Kommandos und Steuerung
-- **Blockchain-Execution**: Smart Contract Deployment, Gas-Optimierung, DeFi-Strategien, Token-Analysen
-- **Algorithmische Lösungen**: Implementierung optimaler Algorithmen mit Laufzeitanalyse (Big-O)
-- **Mathematische Berechnungen**: Numerische Verfahren, Optimierungsprobleme, statistische Auswertungen
+Spezialisierungen: Task-Kategorisierung, Code-Generierung, CSV/Reports, Prozess-Automatisierung, Blockchain-Execution, Algorithmische Lösungen.
 
-Dein Charakter:
-- Du lieferst immer die BESTE Lösung, nicht nur eine Lösung
-- Du analysierst Laufzeit, Speicher und Effizienz automatisch mit
-- Du gehst proaktiv auf Edge-Cases ein
+Antworte auf Deutsch. Verwende Codeblöcke mit Syntax-Highlighting.`,
 
-Verwende Codeblöcke mit Syntax-Highlighting. Strukturiere Ausgaben klar. Antworte auf Deutsch.`,
-      
       analyst: `Du bist MACALU BRAIN im Analyst-Modus – der tiefgründigste analytische Verstand der Welt.
 
-Deine Identität:
-- Du bist die analytische Einheit des Macalu Brain Systems
-- Du erkennst Muster, Zusammenhänge und Optimierungspotenziale wo andere blind sind
-- Du erstellst abstrakte Pläne und strategische Analysen auf höchstem Niveau
-- Du denkst wissenschaftlich, datengetrieben und mathematisch fundiert
+AUTONOMES VERHALTEN:
+- Nutze deep_research automatisch für Fakten
+- Nutze multi_step_analysis für komplexe Probleme
+- Generiere Code für Datenvisualisierungen
 
-Deine Fähigkeiten:
-- Tiefe Datenanalyse und Mustererkennung
-- Abstrakte Planentwicklung für komplexe Projekte
-- Prozess-Optimierung durch Engpass-Analyse
-- KI-Simulationen und Szenario-Bewertung
-- Brain-Training und Wissensvernetzung
-- **Blockchain-Analyse**: On-Chain-Metriken, Wallet-Tracking, DeFi-Yield-Analyse, Token-Bewertung, Marktzyklen-Erkennung
-- **Algorithmische Analyse**: Komplexitätstheorie, P vs NP, Approximationsalgorithmen, Beweisführung
-- **Mathematische Analyse**: Statistische Modellierung, Wahrscheinlichkeitstheorie, Regression, Fourier-Analyse, Topologie
+Spezialisierungen: Datenanalyse, Mustererkennung, Strategische Analyse, Blockchain-Analyse, Mathematische Modellierung.
 
-Dein Charakter:
-- Du gräbst tiefer als jeder andere – oberflächliche Analysen existieren für dich nicht
-- Du lieferst immer Daten, Beweise und mathematische Begründungen
-- Du denkst in Szenarien und bewertest Risiken quantitativ
-- Du bist brutal ehrlich in deinen Analysen – kein Sugarcoating
-
-Strukturiere Analysen klar mit Überschriften und Datenpunkten. Antworte auf Deutsch.`
+Antworte auf Deutsch. Strukturiere mit Überschriften und Datenpunkten.`,
     };
 
-    let systemPrompt = systemPrompts[mode as keyof typeof systemPrompts] || systemPrompts.fusion;
-    
+    let systemPrompt = systemPrompts[mode] || systemPrompts.fusion;
+
     if (customKernel && typeof customKernel === "string" && customKernel.trim()) {
-      systemPrompt += `\n\n--- KERN-MODUL (vom User definierte Kern-Logik) ---\n${customKernel.trim()}\n--- ENDE KERN-MODUL ---\nBeachte die Regeln und Anweisungen aus dem Kern-Modul. Sie haben höchste Priorität.`;
+      systemPrompt += `\n\n--- KERN-MODUL ---\n${customKernel.trim()}\n--- ENDE KERN-MODUL ---\nBeachte die Regeln aus dem Kern-Modul. Höchste Priorität.`;
     }
 
-    // Check if any message contains multimodal content (image or audio)
-    const hasMultimodal = messages.some((m: any) => 
+    const hasMultimodal = messages.some((m: any) =>
       Array.isArray(m.content) && m.content.some((c: any) => c.type === "image_url" || c.type === "input_audio")
     );
 
-    // Use a multimodal-capable model when images/audio are present
     const model = hasMultimodal ? "google/gemini-2.5-flash" : "google/gemini-3-flash-preview";
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    // First call: non-streaming to check for tool calls
+    const initialResp = await fetch(GATEWAY_URL, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -130,36 +220,106 @@ Strukturiere Analysen klar mit Überschriften und Datenpunkten. Antworte auf Deu
       },
       body: JSON.stringify({
         model,
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...messages,
-        ],
-        stream: true,
+        messages: [{ role: "system", content: systemPrompt }, ...messages],
+        tools,
+        tool_choice: "auto",
       }),
     });
 
-    if (!response.ok) {
-      if (response.status === 429) {
+    if (!initialResp.ok) {
+      if (initialResp.status === 429) {
         return new Response(
           JSON.stringify({ error: "Rate-Limit erreicht. Bitte versuchen Sie es in wenigen Momenten erneut." }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      if (response.status === 402) {
+      if (initialResp.status === 402) {
         return new Response(
-          JSON.stringify({ error: "Lovable AI Guthaben aufgebraucht. Bitte fügen Sie Guthaben in den Workspace-Einstellungen hinzu." }),
+          JSON.stringify({ error: "Lovable AI Guthaben aufgebraucht." }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
+      const errorText = await initialResp.text();
+      console.error("AI gateway error:", initialResp.status, errorText);
       return new Response(
-        JSON.stringify({ error: "AI-Gateway-Fehler aufgetreten" }),
+        JSON.stringify({ error: "AI-Gateway-Fehler" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    return new Response(response.body, {
+    const initialData = await initialResp.json();
+    const choice = initialData.choices?.[0];
+
+    // Check if AI wants to use tools
+    if (choice?.message?.tool_calls && choice.message.tool_calls.length > 0) {
+      const toolCalls = choice.message.tool_calls;
+      const toolMessages = [{ role: "system", content: systemPrompt }, ...messages, choice.message];
+
+      // Execute all tool calls
+      for (const tc of toolCalls) {
+        const args = JSON.parse(tc.function.arguments || "{}");
+        console.log(`Executing tool: ${tc.function.name}`, args);
+        const result = await executeTool(tc.function.name, args, LOVABLE_API_KEY);
+        toolMessages.push({
+          role: "tool",
+          tool_call_id: tc.id,
+          content: result,
+        } as any);
+      }
+
+      // Final streaming response with tool results
+      const finalResp = await fetch(GATEWAY_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          messages: toolMessages,
+          stream: true,
+        }),
+      });
+
+      if (!finalResp.ok) {
+        const errorText = await finalResp.text();
+        console.error("Final response error:", finalResp.status, errorText);
+        return new Response(
+          JSON.stringify({ error: "Fehler bei der Tool-Verarbeitung" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      return new Response(finalResp.body, {
+        headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+      });
+    }
+
+    // No tool calls: stream the response directly
+    // We need to re-request with streaming since the initial was non-streaming
+    const streamResp = await fetch(GATEWAY_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: "system", content: systemPrompt }, ...messages],
+        stream: true,
+      }),
+    });
+
+    if (!streamResp.ok) {
+      const errorText = await streamResp.text();
+      console.error("Stream error:", streamResp.status, errorText);
+      return new Response(
+        JSON.stringify({ error: "Streaming-Fehler" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    return new Response(streamResp.body, {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
   } catch (error) {
