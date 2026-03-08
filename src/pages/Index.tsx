@@ -59,6 +59,11 @@ const Index = () => {
     toast({ title: "📷 Foto aufgenommen", description: "Schreibe eine Frage zum Bild oder sende es direkt." });
   };
 
+  const handleAudioRecorded = (base64: string, durationSec: number) => {
+    setPendingAudio(base64);
+    toast({ title: "🔴 Audio aufgenommen", description: `${durationSec}s Umgebungs-Audio bereit. Schreibe eine Frage oder sende direkt.` });
+  };
+
   const handleVoiceTranscript = (text: string) => {
     setInput((prev) => (prev ? prev + " " + text : text));
   };
