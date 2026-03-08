@@ -17,7 +17,10 @@ const systemMessage: Message = {
     • Fusion-KIs, Bot-KIs & NFC-KIs integriert<br>
     • Task-Execution & Kategorisierung<br>
     • Report-Generator & Prozess-Optimierung<br>
+    • 🔗 Blockchain, Smart Contracts & On-Chain-Analyse<br>
+    • 🧮 Algorithmen, Mathematik & Kryptographie<br>
     • Echtzeit-Streaming mit Brain-Netzwerk<br><br>
+    <em>Ehrgeiz-Level: Maximum. Ich finde IMMER einen Weg.</em><br>
     Alle Systeme bereit. Awaiting commands.`
 };
 
