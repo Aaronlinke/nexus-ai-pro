@@ -106,13 +106,13 @@ Strukturiere Analysen klar mit Überschriften und Datenpunkten. Antworte auf Deu
       systemPrompt += `\n\n--- KERN-MODUL (vom User definierte Kern-Logik) ---\n${customKernel.trim()}\n--- ENDE KERN-MODUL ---\nBeachte die Regeln und Anweisungen aus dem Kern-Modul. Sie haben höchste Priorität.`;
     }
 
-    // Check if any message contains image content (multimodal)
-    const hasImage = messages.some((m: any) => 
-      Array.isArray(m.content) && m.content.some((c: any) => c.type === "image_url")
+    // Check if any message contains multimodal content (image or audio)
+    const hasMultimodal = messages.some((m: any) => 
+      Array.isArray(m.content) && m.content.some((c: any) => c.type === "image_url" || c.type === "input_audio")
     );
 
-    // Use a vision-capable model when images are present
-    const model = hasImage ? "google/gemini-2.5-flash" : "google/gemini-3-flash-preview";
+    // Use a multimodal-capable model when images/audio are present
+    const model = hasMultimodal ? "google/gemini-2.5-flash" : "google/gemini-3-flash-preview";
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
