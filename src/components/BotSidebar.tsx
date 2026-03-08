@@ -15,12 +15,12 @@ const BotSidebar = ({ mode, onModeChange, onCapabilityClick }: BotSidebarProps) 
     { icon: "🔬", title: "Fusion-KI Recherche", cmd: "fusion-research" },
     { icon: "📋", title: "Task-Kategorisierung", cmd: "task-categorization" },
     { icon: "💻", title: "Code-Fusion", cmd: "code-fusion" },
-    { icon: "📐", title: "Abstrakte Pläne", cmd: "abstract-plans" },
+    { icon: "🔗", title: "Blockchain & Web3", cmd: "blockchain" },
+    { icon: "🧮", title: "Algorithmen & Mathe", cmd: "algorithms" },
     { icon: "📊", title: "Report-Generator", cmd: "report-generator" },
     { icon: "📡", title: "NFC-Bot Steuerung", cmd: "nfc-bot" },
     { icon: "⚡", title: "Prozess-Optimierung", cmd: "process-optimization" },
     { icon: "🌍", title: "Multi-Brain Übersetzung", cmd: "multi-translation" },
-    { icon: "🎮", title: "KI-Simulation", cmd: "ki-simulation" },
     { icon: "🧠", title: "Brain-Training", cmd: "brain-training" }
   ];
 
@@ -81,8 +81,13 @@ const BotSidebar = ({ mode, onModeChange, onCapabilityClick }: BotSidebarProps) 
                   <ul className="text-muted-foreground space-y-0.5 list-disc list-inside">
                     <li>Task-Execution Engine</li>
                     <li>Report-Generator</li>
-                    <li>Prozess-Optimierung</li>
+                    <li>Blockchain & On-Chain-Analyse</li>
+                    <li>Algorithmen & Mathematik</li>
                   </ul>
+                </div>
+                <div>
+                  <div className="text-neon font-semibold mb-1">Charakter</div>
+                  <p className="text-muted-foreground italic">Ehrgeiz-Level: Maximum. Gibt niemals auf.</p>
                 </div>
               </div>
             </TabsContent>
