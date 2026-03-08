@@ -143,7 +143,7 @@ const Index = () => {
             </div>
           </header>
         ) : (
-          <BotHeader />
+          <BotHeader onNewChat={newConversation} onClearChat={clearHistory} />
         )}
         
         {/* Chat Area */}
