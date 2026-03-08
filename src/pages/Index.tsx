@@ -169,6 +169,22 @@ const Index = () => {
           </div>
         )}
 
+        {/* Pending Audio Preview */}
+        {pendingAudio && (
+          <div className="bg-tech border-t border-neon/30 px-3 md:px-6 py-2 flex items-center gap-3">
+            <span className="text-lg">🔴</span>
+            <span className="text-xs text-muted-foreground">Audio bereit – schreibe eine Frage oder sende direkt</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setPendingAudio(null)}
+              className="text-destructive text-xs ml-auto"
+            >
+              ✕
+            </Button>
+          </div>
+        )}
+
         {/* Input Area */}
         <div className="bg-tech border-t border-neon/50 p-3 md:p-6">
           {/* Quick Commands - Hidden on very small screens */}
@@ -195,10 +211,11 @@ const Index = () => {
               <Camera className="h-4 w-4 md:h-5 md:w-5" />
             </Button>
             <VoiceInput onTranscript={handleVoiceTranscript} />
+            <AudioRecorder onRecorded={handleAudioRecorded} />
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={pendingImage ? "Frage zum Bild eingeben..." : "Nachricht eingeben..."}
+              placeholder={pendingAudio ? "Frage zum Audio eingeben..." : pendingImage ? "Frage zum Bild eingeben..." : "Nachricht eingeben..."}
               className="flex-1 bg-input border border-neon/30 text-foreground placeholder:text-muted-foreground 
                        focus:border-neon focus:ring-1 focus:ring-neon/20 rounded-lg h-10 md:h-12 text-sm md:text-base"
             />
