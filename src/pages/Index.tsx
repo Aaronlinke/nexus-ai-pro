@@ -48,12 +48,12 @@ const Index = () => {
       "fusion-research": "Recherchiere mit allen Fusion-KIs zum Thema künstliche Superintelligenz",
       "task-categorization": "Kategorisiere meine aktuellen Tasks nach Priorität und Komplexität",
       "code-fusion": "Generiere optimierten Code mit der Fusion-Engine",
-      "abstract-plans": "Erstelle einen abstrakten Plan für ein KI-Projekt",
+      "blockchain": "Analysiere die aktuellen Blockchain-Trends, Smart Contract Patterns und DeFi-Protokolle – gib mir eine vollständige Übersicht",
+      "algorithms": "Erkläre mir die wichtigsten Algorithmen und mathematischen Konzepte für komplexe Optimierungsprobleme – mit Beispielen und Laufzeitanalyse",
       "report-generator": "Generiere einen umfassenden Report über aktuelle Prozesse",
       "nfc-bot": "Steuere den NFC-Bot und zeige den aktuellen Status",
       "process-optimization": "Optimiere den aktuellen Workflow-Prozess",
       "multi-translation": "Übersetze mit Multi-Brain in mehrere Sprachen gleichzeitig",
-      "ki-simulation": "Führe eine KI-Fusionssimulation durch",
       "brain-training": "Trainiere das Brain-Netzwerk mit neuen Daten"
     };
 
