@@ -21,6 +21,7 @@ const Index = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [pendingImage, setPendingImage] = useState<string | null>(null);
+  const [pendingAudio, setPendingAudio] = useState<string | null>(null);
   const chatRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { messages, sendMessage } = useStreamingChat();
@@ -33,22 +34,23 @@ const Index = () => {
     }
   }, [messages]);
 
-  const processCommand = async (command: string, imageBase64?: string) => {
-    await sendMessage(command, mode, kernel, imageBase64);
+  const processCommand = async (command: string, imageBase64?: string, audioBase64?: string) => {
+    await sendMessage(command, mode, kernel, imageBase64, audioBase64);
     
     toast({
       title: "Befehl wird verarbeitet",
-      description: imageBase64 ? "Bild wird von der KI analysiert..." : "Die KI generiert eine Antwort in Echtzeit.",
+      description: audioBase64 ? "Audio wird von der KI analysiert..." : imageBase64 ? "Bild wird von der KI analysiert..." : "Die KI generiert eine Antwort in Echtzeit.",
     });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (input.trim() || pendingImage) {
-      const text = input.trim() || "Analysiere dieses Bild und beschreibe was du siehst.";
-      processCommand(text, pendingImage || undefined);
+    if (input.trim() || pendingImage || pendingAudio) {
+      const text = input.trim() || (pendingImage ? "Analysiere dieses Bild und beschreibe was du siehst." : "Analysiere diese Audio-Aufnahme. Beschreibe was du hörst – Umgebungsgeräusche, Töne, Rauschen, Stimmen oder Muster.");
+      processCommand(text, pendingImage || undefined, pendingAudio || undefined);
       setInput("");
       setPendingImage(null);
+      setPendingAudio(null);
     }
   };
 
