@@ -60,7 +60,7 @@ export const useStreamingChat = () => {
     setMessages([systemMessage]);
   }, []);
 
-  const sendMessage = async (input: string, mode: string) => {
+  const sendMessage = async (input: string, mode: string, customKernel?: string) => {
     const userMessage: Message = {
       id: Date.now().toString(),
       type: "user",
@@ -90,10 +90,11 @@ export const useStreamingChat = () => {
             .filter(m => m.type !== "system")
             .map(m => ({
               role: m.type === "user" ? "user" : "assistant",
-              content: m.content.replace(/<[^>]*>/g, '') // Strip HTML for AI
+              content: m.content.replace(/<[^>]*>/g, '')
             }))
             .concat([{ role: "user", content: input }]),
-          mode 
+          mode,
+          customKernel,
         }),
       });
 

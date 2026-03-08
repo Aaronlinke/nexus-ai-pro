@@ -3,14 +3,19 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import CapabilityItem from "./CapabilityItem";
 import ModeSelector from "./ModeSelector";
 import ExecutionPanel from "./ExecutionPanel";
+import KernelEditor from "./KernelEditor";
 
 interface BotSidebarProps {
   mode: string;
   onModeChange: (mode: string) => void;
   onCapabilityClick: (capability: string) => void;
+  kernel?: string;
+  onKernelChange?: (value: string) => void;
+  onKernelReset?: () => void;
+  onKernelEvolve?: () => void;
 }
 
-const BotSidebar = ({ mode, onModeChange, onCapabilityClick }: BotSidebarProps) => {
+const BotSidebar = ({ mode, onModeChange, onCapabilityClick, kernel, onKernelChange, onKernelReset, onKernelEvolve }: BotSidebarProps) => {
   const capabilities = [
     { icon: "🔬", title: "Fusion-KI Recherche", cmd: "fusion-research" },
     { icon: "📋", title: "Task-Kategorisierung", cmd: "task-categorization" },
@@ -39,12 +44,18 @@ const BotSidebar = ({ mode, onModeChange, onCapabilityClick }: BotSidebarProps) 
 
           {/* Tabs */}
           <Tabs defaultValue="capabilities" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-secondary/50 border border-neon/30 h-8">
+            <TabsList className="grid w-full grid-cols-3 bg-secondary/50 border border-neon/30 h-8">
               <TabsTrigger 
                 value="capabilities"
                 className="text-xs data-[state=active]:bg-neon/30 data-[state=active]:text-neon"
               >
-                Fähigkeiten
+                Skills
+              </TabsTrigger>
+              <TabsTrigger 
+                value="kernel"
+                className="text-xs data-[state=active]:bg-neon/30 data-[state=active]:text-neon"
+              >
+                Kern
               </TabsTrigger>
               <TabsTrigger 
                 value="info"
@@ -64,6 +75,17 @@ const BotSidebar = ({ mode, onModeChange, onCapabilityClick }: BotSidebarProps) 
                   onClick={() => onCapabilityClick(cap.cmd)}
                 />
               ))}
+            </TabsContent>
+
+            <TabsContent value="kernel" className="mt-3">
+              {kernel !== undefined && onKernelChange && onKernelReset && onKernelEvolve && (
+                <KernelEditor
+                  kernel={kernel}
+                  onKernelChange={onKernelChange}
+                  onReset={onKernelReset}
+                  onEvolve={onKernelEvolve}
+                />
+              )}
             </TabsContent>
 
             <TabsContent value="info" className="mt-3">
