@@ -150,8 +150,9 @@ const Index = () => {
         {/* Chat Area */}
         <div 
           ref={chatRef}
-          className="flex-1 overflow-y-auto p-3 md:p-6 space-y-2 md:space-y-3 bg-background/30"
+          className="flex-1 overflow-y-auto p-3 md:p-6 space-y-2 md:space-y-3 bg-background/30 relative"
         >
+          <OasisBackground />
           {messages.map((message) => (
             <ChatMessage
               key={message.id}
